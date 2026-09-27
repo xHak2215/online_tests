@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>тесты | личный кабинет</title>
+  <link rel="stylesheet" href="/front/style.css" />
+  <link id="favicon" rel="icon" type="image/x-icon" href="/front/favicon.ico">
+</head>
+<body>
+  <div class="toast" id="toast"></div>
+
+  <div class="dashboard">
+    <aside class="sidebar">
+      <div class="brand">
+        <p>Личный кабинет</p>
+      </div>
+
+      <nav class="menu">
+        <a class="menu-link" href="#">Мои тесты</a>
+        <a class="menu-link" href="#">Создать тест</a>
+        <a class="menu-link" href="#">Статистика</a>
+        <a class="menu-link" href="#">Настройки</a>
+      </nav>
+    </aside>
+
+    <main class="main-content">
+      <header class="dashboard-header">
+        <div>
+          <h1>Личный кабинет</h1>
+          <div id="name">Загрузка...</div>
+        </div>
+        <button class="submit-btn logout-btn">Выйти</button>
+      </header>
+
+      <section class="stats">
+        <div class="stat-card">
+          <h3>Активные тесты</h3>
+          <p>12</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const API_URL = 'http://192.168.0.108:8810/api/v1/';
+
+    const form = document.getElementById('testForm');
+    const toast = document.getElementById('toast');
+
+    function showToast(message, type = 'success') {
+      toast.textContent = message;
+      toast.className = `toast show ${type}`; 
+      setTimeout(() => {
+        toast.className = 'toast';
+      }, 3000);
+    }
+
+    if (document.cookie) {
+      const cookies = document.cookie.split(";");
+      devise_id = cookies[1].split("=")
+      for(cookie of cookies){
+          const parts = cookie.split("=");
+
+          if (parts[0] == "user_data" && devise_id[0] == "devise_id"){
+            json_data = JSON.parse(parts[1]);
+
+            const params = new URLSearchParams({
+              token: json_data.token,
+              time: json_data.time,
+              devise_id: devise_id[1]
+            });
+
+            console.log(params);
+
+            try {
+              const response = await fetch(API_URL + `verify_refresh_token?${params}`);
+              const result = await response.json();
+              console.log(result);
+              
+              if (result.is_ok) {
+                
+              } else if (result.details) {
+                showToast(result.details, type="error");
+              }
+            } catch (error) {
+              console.error(error);
+              showToast('Ошибка отправки', type="error");
+            }
+
+            document.getElementById('result').textContent = data.message;
+         }
+       }
+     }
+  </script>
+</body>
+</html>

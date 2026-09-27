@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Регистрация</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="/front/style.css" />
   <link id="favicon" rel="icon" type="image/x-icon" href="/front/favicon.ico">
 
 </head>
@@ -12,7 +12,8 @@
   <div class="container">
     <form class="register-box" id="registerForm">
       <h2>Регистрация</h2>
-
+      
+      <div id="toast" class="toast"></div>
       <div class="role-switch">
         <button type="button" class="role-btn active" data-role="teacher">Учитель</button>
         <button type="button" class="role-btn" data-role="student">Ученик</button>
@@ -23,16 +24,21 @@
       <label for="name">Имя</label>
       <input type="text" id="name" placeholder="Введите имя" required />
 
+      <label for="name">Фамилия</label>
+      <input type="text" id="surname" placeholder="Введите фамилию" required />
+
       <label for="email">Email</label>
       <input type="email" id="email" placeholder="Введите email" required />
 
       <label for="password">Пароль</label>
-      <input type="password" id="password" placeholder="Введите пароль" required />
+      <input type="password" id="password" placeholder="Придумайте пароль" required />
 
+    <!--
       <div id="teacherFields">
         <label for="subject">Предмет</label>
         <input type="text" id="subject" placeholder="Например: Математика" />
       </div>
+      -->
 
       <div id="studentFields" style="display: none;">
         <label for="class">Класс</label>
@@ -44,22 +50,76 @@
   </div>
 
 <script>
-  const API_URL = 'http://192.168.0.108:8810/api/v1'
+  const API_URL = 'http://192.168.0.108:8810/api/v1/';
+
+  const buttons = document.querySelectorAll('.role-btn');
+  const roleInput = document.getElementById('role');
+  const studentFields = document.getElementById('studentFields');
+  let role = '';
+
+  function showToast(message, type = "success") {
+    const toast = document.getElementById("toast");
+    toast.textContent = message;
+    toast.className = `toast ${type} show`;
+
+    setTimeout(() => {
+      toast.classList.remove("show");
+    }, 3000);
+  }
+
+  buttons.forEach(button => {
+    button.addEventListener('click', () => {
+      buttons.forEach(btn => btn.classList.remove('active'));
+      button.classList.add('active');
+
+      role = button.dataset.role;
+      roleInput.value = role;
+
+      if (role === 'teacher') {
+        studentFields.style.display = 'none';
+      } else {
+        studentFields.style.display = 'block';
+      }
+    });
+  });
 
   document.getElementById('registerForm').addEventListener('submit', async function(e) {
     e.preventDefault();
 
+    const classValue = document.getElementById('class').value.trim();
+
+    if (role == 'student') {
+      const classU = Number(classValue.replace(/[a-zа-я]/gi, '')); // проверка возможности существования класса
+    
+      if (!classValue || (classU < 1 || classU > 11) || String(classU).length - classValue.length > 1) {
+        showToast('класс не введен или введен не корректно');
+        document.getElementById('class').value = '';
+        return;
+      }
+    }
+    
+    // генерация случайного ID как индификатор сессии
+
+    const bytes = crypto.getRandomValues(new Uint8Array(16));
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+
+    const devise_id_s = [...bytes].map((b, i) =>
+      [4, 6, 8, 10].includes(i) ? `-${b.toString(16).padStart(2, '0')}` : b.toString(16).padStart(2, '0')
+    ).join('').replace(/^(.{8})(.{4})(.{4})(.{4})(.{12})$/, '$1-$2-$3-$4-$5');
+
     const data = {
-      role: document.getElementById('role').value,
-      name: document.getElementById('name').value,
-      email: document.getElementById('email').value,
-      password: document.getElementById('password').value,
-      subject: document.getElementById('subject').value,
-      class: document.getElementById('class').value
+      role: roleInput.value,
+      name: document.getElementById('name').value.trim(),
+      surname: document.getElementById('surname').value.trim(),
+      email: document.getElementById('email').value.trim(),
+      password: document.getElementById('password').value.trim(),
+      classU: classValue,
+      devise_id: devise_id_s
     };
 
     try {
-      const response = await fetch(API_URL, {
+      const response = await fetch(API_URL + 'new_user', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -69,13 +129,22 @@
 
       const result = await response.json();
       console.log(result);
-      alert('Данные отправлены!');
+      
+      if (result.is_ok) {
+        showToast('успешно!');
+        console.log(JSON.stringify(result.data));
+        document.cookie = `user_data=${JSON.stringify(result.data)};devise_id=${devise_id};`; //path=/; secure=true; на момент тестов не возможно использовать тк не https
+        window.location.href = "/account";
+      } else if (result.details) {
+        showToast(result.details, type="error");
+      }
     } catch (error) {
       console.error(error);
-      alert('Ошибка отправки');
+      showToast('Ошибка отправки', type="error");
     }
   });
 </script>
+
 </body>
 </html>
 

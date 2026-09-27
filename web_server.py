@@ -1,12 +1,24 @@
+import socket, os
+
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
-import socket
-
 app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
 app.mount("/front", StaticFiles(directory = "frontend"), name = "front")
 
+cache = {}
+
+# обновление кеша при каждом запросе, по факту делает кеш безполеным но для тестов пойдет
+RELOAD = True
+
+def html_reader(html, path="frontend"):
+    if html in cache.keys() and not RELOAD:
+        return cache[html]
+    else:
+        cache[html] = open(os.path.join(os.getcwd(), path, html), 'r').read()
+        return cache[html]
+        
 def get_local_ip():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
@@ -25,7 +37,20 @@ def ping_server():
 
 @app.get("/", response_class=HTMLResponse)
 async def main():
-    return RedirectResponse("/front/index.html")
+    return html_reader("index.html") #RedirectResponse("/front/index.html")
+
+@app.get("/account", response_class=HTMLResponse)
+def account():
+    return html_reader("account.html")
+
+@app.get("/account/teacher", response_class=HTMLResponse)
+def account():
+    return html_reader("personal_account_teacher.html")
+
+@app.get("/account/student", response_class=HTMLResponse)
+def account():
+    return html_reader("personal_account_student.html")
+
 
 if __name__ == "__main__":
     import uvicorn

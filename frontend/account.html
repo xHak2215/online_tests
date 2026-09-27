@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>верификация...</title>
+  <link rel="stylesheet" href="/front/style.css" />
+  <link id="favicon" rel="icon" type="image/x-icon" href="/front/favicon.ico">
+</head>
+<body>
+<script>
+if (document.cookie) {
+    const cookies = document.cookie.split(";");
+    for(cookie of cookies){
+        const parts = cookie.split("=");
+
+        if (parts[0] == "user_data"){
+            json_data = JSON.parse(parts[1]);
+
+            if (json_data.role == "teacher"){
+                window.location.replace('/account/teacher');
+            } else if (json_data.role == "student") {
+                window.location.replace('/account/student');
+            }
+        }
+    }
+} else {
+    window.location.replace('/');
+}
+</script>
+</body>
+</html>
