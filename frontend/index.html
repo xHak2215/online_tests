@@ -24,7 +24,7 @@
       <label for="name">Имя</label>
       <input type="text" id="name" placeholder="Введите имя" required />
 
-      <label for="name">Фамилия</label>
+      <label for="surname">Фамилия</label>
       <input type="text" id="surname" placeholder="Введите фамилию" required />
 
       <label for="email">Email</label>
@@ -131,9 +131,13 @@
       console.log(result);
       
       if (result.is_ok) {
-        showToast('успешно!');
+        showToast('успешно!\nсекунду...');
         console.log(JSON.stringify(result.data));
-        document.cookie = `user_data=${JSON.stringify(result.data)};devise_id=${devise_id};`; //path=/; secure=true; на момент тестов не возможно использовать тк не https
+
+         //secure=true; на момент тестов не возможно использовать тк не https
+        document.cookie = `user_data=${JSON.stringify(result.data)}; path=/;`;
+        document.cookie = `devise_id=${devise_id_s}; path=/;`;
+
         window.location.href = "/account";
       } else if (result.details) {
         showToast(result.details, type="error");

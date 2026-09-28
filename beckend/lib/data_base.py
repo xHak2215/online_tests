@@ -135,24 +135,24 @@ def register(name:str, surname:str, email:str, password:str, role:str, works:str
         # Закрываем соединение
         connection.close()
 
-def get_data_for_token(token:str, time:float, devise_id:str):
+def get_data_for_token(token:str, time_token:float, devise_id:str, name:str, surname:str, email:str):
     try:
         connection, cursor = init_users()
     except Exception as e:
         logger.error(f'Ошибка в операции с базой данных: {e}\n{traceback.format_exc()}')
         return {"is_ok": False, "error_code":500, "details": f"server error: {e}", "data": None}
     try:
-        cursor.execute('SELECT * FROM Users WHERE token = ?', (token))
+        cursor.execute('SELECT * FROM Users WHERE name = ? AND surname = ? AND email = ?', (name, surname, email))
         result = cursor.fetchone()
 
         if result:
-            print(token, result[1], result[2], result[3], SECRET_KEY, time)
-            if verify_refresh_token(token, result[1], result[2], result[3], SECRET_KEY, time):
-
+            if verify_refresh_token(token, result[1], result[2], result[3], SECRET_KEY, time_token):
                 logger.info(f"token {result[1]} {result[2]} verefy")
-                if time - time.time() < 157784808: # если прошло менее 6 месяцев и срок токена не истек
+
+                if float(time_token) - time.time() < 157784808: # если прошло менее 6 месяцев и срок токена не истек
                     refresh_token = json.dumps(creat_refresh_token(result[1], result[2], result[3], SECRET_KEY))
-                    update_user(token, {devise_id: {"refresh_token": refresh_token}})
+                    print(refresh_token)
+                    #update_user(token, {"refresh_token"})
 
                     return {"is_ok": True, "error_code":None, "details": None, "data": 
                     {"name":result[1], "surname":result[2], "email":result[3], "role":result[5], "works": result[6], "class":result[7], "refresh_token":refresh_token}}

@@ -5,7 +5,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 
-from lib.data_base import register
+from lib.data_base import register, get_data_for_token
 from lib.models import UserRegistration
 from lib.tokenizer import hash_password, verify_password
 
@@ -46,8 +46,9 @@ async def new_user(user: UserRegistration):
     return data
 
 @app.get("/api/v1/verify_refresh_token")
-async def verify_refresh_token(token:str, time:float, devise_id:str):
-    get_data_for_token(token, time, devise_id)
+async def verify_refresh_token(token:str, time:str, devise_id:str, name:str, surname:str, email:str):
+    print(token, time, devise_id)
+    return get_data_for_token(token, time, devise_id, name, surname, email)
 
 if __name__ == "__main__":
     import uvicorn

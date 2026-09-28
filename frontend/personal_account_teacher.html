@@ -14,6 +14,7 @@
     <aside class="sidebar">
       <div class="brand">
         <p>Личный кабинет</p>
+        <p id="name_account">Загрузка...</p>
       </div>
 
       <nav class="menu">
@@ -27,8 +28,7 @@
     <main class="main-content">
       <header class="dashboard-header">
         <div>
-          <h1>Личный кабинет</h1>
-          <div id="name">Загрузка...</div>
+        <p>затычка</p>  
         </div>
         <button class="submit-btn logout-btn">Выйти</button>
       </header>
@@ -36,7 +36,7 @@
       <section class="stats">
         <div class="stat-card">
           <h3>Активные тесты</h3>
-          <p>12</p>
+          <p id="active_test">0</p>
         </div>
       </section>
     </main>
@@ -58,37 +58,40 @@
 
     if (document.cookie) {
       const cookies = document.cookie.split(";");
-      devise_id = cookies[1].split("=")
+      devise_id = cookies[1].split("=");
+
       for(cookie of cookies){
           const parts = cookie.split("=");
 
-          if (parts[0] == "user_data" && devise_id[0] == "devise_id"){
+          if (parts[0] == "user_data" && devise_id[0].trim() == "devise_id"){
             json_data = JSON.parse(parts[1]);
 
             const params = new URLSearchParams({
-              token: json_data.token,
-              time: json_data.time,
-              devise_id: devise_id[1]
+              token: JSON.parse(json_data.refresh_token)[devise_id[1]]["token"],
+              time: JSON.parse(json_data.refresh_token)[devise_id[1]]["time"],
+              devise_id: devise_id[1],
+              name: json_data.name,
+              surname: json_data.surname,
+              email: json_data.email
             });
 
-            console.log(params);
-
-            try {
-              const response = await fetch(API_URL + `verify_refresh_token?${params}`);
-              const result = await response.json();
+            const response = fetch(API_URL + `verify_refresh_token?${params}`)  
+            .then(response => response.json())
+            .then(result => {
               console.log(result);
-              
+
               if (result.is_ok) {
-                
+                console.log("OK");
+                document.getElementById('name_account').textContent = `${result.data.name} ${result.data.surname}`;
+
               } else if (result.details) {
                 showToast(result.details, type="error");
               }
-            } catch (error) {
-              console.error(error);
+            })
+            .catch(error => {
+              console.error('Ошибка:', error);
               showToast('Ошибка отправки', type="error");
-            }
-
-            document.getElementById('result').textContent = data.message;
+            });
          }
        }
      }
