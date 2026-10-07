@@ -21,7 +21,7 @@ def init_users():
     """
 
     # Создаем подключение к базе данных
-    connection = sqlite3.connect('data_base.db', timeout=10)
+    connection = sqlite3.connect('user_data_base.db', timeout=10)
     cursor = connection.cursor()
     cursor.execute("PRAGMA journal_mode=WAL;")
 
@@ -42,6 +42,37 @@ def init_users():
     
     # Создаем индекс (если он еще не существует)
     cursor.execute('CREATE INDEX IF NOT EXISTS user_id_index ON Users (id)')
+    return connection, cursor
+
+def init_tests():
+    """
+    **отвечает за хронение тестов**
+
+    Returns:
+        tuple: connect, cursor
+    """
+
+    # Создаем подключение к базе данных
+    connection = sqlite3.connect('tests_data_base.db', timeout=10)
+    cursor = connection.cursor()
+    cursor.execute("PRAGMA journal_mode=WAL;")
+
+    # Создаем таблицу (если она еще не существует)
+    """
+    колонки:
+        creator - словарь с данными создателя
+        identifier - ID/инификатор теста для ссылок на него
+    """
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS tests (
+        id INTEGER PRIMARY KEY,
+        creator TEXT NOT NULL,
+        identifier INTEGER NOT NULL
+    )
+    ''')
+    
+    # Создаем индекс (если он еще не существует)
+    cursor.execute('CREATE INDEX IF NOT EXISTS test_id_index ON tests (id)')
     return connection, cursor
 
 def update_user(refresh_token:str, relust:dict):
@@ -151,7 +182,7 @@ def get_data_for_token(token:str, time_token:float, devise_id:str, name:str, sur
 
                 if float(time_token) - time.time() < 157784808: # если прошло менее 6 месяцев и срок токена не истек
                     refresh_token = json.dumps(creat_refresh_token(result[1], result[2], result[3], SECRET_KEY))
-                    print(refresh_token)
+
                     #update_user(token, {"refresh_token"})
 
                     return {"is_ok": True, "error_code":None, "details": None, "data": 
@@ -170,3 +201,4 @@ def get_data_for_token(token:str, time_token:float, devise_id:str, name:str, sur
     finally:
         # Закрываем соединение
         connection.close()
+

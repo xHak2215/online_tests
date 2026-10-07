@@ -51,6 +51,9 @@ def account():
 def account():
     return html_reader("personal_account_student.html")
 
+@app.get("/created_test", response_class=HTMLResponse)
+def account():
+    return html_reader("created_test.html")
 
 if __name__ == "__main__":
     import uvicorn

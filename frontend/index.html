@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Регистрация</title>
-  <link rel="stylesheet" href="/front/style.css" />
+  <link rel="stylesheet" href="/front/style.css"/>
   <link id="favicon" rel="icon" type="image/x-icon" href="/front/favicon.ico">
 
 </head>
@@ -49,23 +49,14 @@
     </form>
   </div>
 
-<script>
-  const API_URL = 'http://192.168.0.108:8810/api/v1/';
+<script type="module">
+  import {API_URL} from '/front/libs/conf.js';
+  import {showToast} from '/front/libs/unit.js';
 
   const buttons = document.querySelectorAll('.role-btn');
   const roleInput = document.getElementById('role');
   const studentFields = document.getElementById('studentFields');
   let role = '';
-
-  function showToast(message, type = "success") {
-    const toast = document.getElementById("toast");
-    toast.textContent = message;
-    toast.className = `toast ${type} show`;
-
-    setTimeout(() => {
-      toast.classList.remove("show");
-    }, 3000);
-  }
 
   buttons.forEach(button => {
     button.addEventListener('click', () => {
@@ -140,11 +131,11 @@
 
         window.location.href = "/account";
       } else if (result.details) {
-        showToast(result.details, type="error");
+        showToast(result.details, "error");
       }
     } catch (error) {
       console.error(error);
-      showToast('Ошибка отправки', type="error");
+      showToast('Ошибка отправки', "error");
     }
   });
 </script>

@@ -19,7 +19,7 @@
 
       <nav class="menu">
         <a class="menu-link" href="#">Мои тесты</a>
-        <a class="menu-link" href="#">Создать тест</a>
+        <a class="menu-link" href="/created_test">Создать тест</a>
         <a class="menu-link" href="#">Статистика</a>
         <a class="menu-link" href="#">Настройки</a>
       </nav>
@@ -42,59 +42,48 @@
     </main>
   </div>
 
-  <script>
-    const API_URL = 'http://192.168.0.108:8810/api/v1/';
-
+  <script type="module">
+    import {API_URL} from '/front/libs/conf.js';
+    import {showToast} from '/front/libs/unit.js';
+    
     const form = document.getElementById('testForm');
     const toast = document.getElementById('toast');
 
-    function showToast(message, type = 'success') {
-      toast.textContent = message;
-      toast.className = `toast show ${type}`; 
-      setTimeout(() => {
-        toast.className = 'toast';
-      }, 3000);
-    }
-
     if (document.cookie) {
       const cookies = document.cookie.split(";");
-      devise_id = cookies[1].split("=");
+      const user_data = cookies[0].split("user_data=")[1];
+      const devise_id = cookies[1].split("devise_id=")[1];
 
-      for(cookie of cookies){
-          const parts = cookie.split("=");
+      const json_data = JSON.parse(user_data);
 
-          if (parts[0] == "user_data" && devise_id[0].trim() == "devise_id"){
-            json_data = JSON.parse(parts[1]);
+      const params = new URLSearchParams({
+        token: JSON.parse(json_data.refresh_token)[devise_id]["token"],
+        time: JSON.parse(json_data.refresh_token)[devise_id]["time"],
+        devise_id: devise_id,
+        name: json_data.name,
+        surname: json_data.surname,
+        email: json_data.email
+      });
 
-            const params = new URLSearchParams({
-              token: JSON.parse(json_data.refresh_token)[devise_id[1]]["token"],
-              time: JSON.parse(json_data.refresh_token)[devise_id[1]]["time"],
-              devise_id: devise_id[1],
-              name: json_data.name,
-              surname: json_data.surname,
-              email: json_data.email
-            });
+      const response = fetch(API_URL + `verify_refresh_token?${params}`)  
+      .then(response => response.json())
+      .then(result => {
+        console.log(result);
 
-            const response = fetch(API_URL + `verify_refresh_token?${params}`)  
-            .then(response => response.json())
-            .then(result => {
-              console.log(result);
+        if (result.is_ok) {
+          console.log("OK");
+          document.getElementById('name_account').textContent = `${result.data.name} ${result.data.surname}`;
 
-              if (result.is_ok) {
-                console.log("OK");
-                document.getElementById('name_account').textContent = `${result.data.name} ${result.data.surname}`;
+        } else if (result.details) {
+          showToast(result.details, type="error");
+        }
+      })
+      .catch(error => {
+        console.error('Ошибка:', error);
+        showToast('Ошибка отправки', type="error");
+      });
+    }
 
-              } else if (result.details) {
-                showToast(result.details, type="error");
-              }
-            })
-            .catch(error => {
-              console.error('Ошибка:', error);
-              showToast('Ошибка отправки', type="error");
-            });
-         }
-       }
-     }
   </script>
 </body>
 </html>

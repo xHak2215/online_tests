@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Создание теста</title>
+  <link rel="stylesheet" href="/front/style.css" />
+  <link id="favicon" rel="icon" type="image/x-icon" href="/front/favicon.ico">
+</head>
+<body>
+  <div class="dashboard">
+    <aside class="sidebar">
+      <div class="brand">
+        <p>Создание тестовых заданий</p>
+      </div>
+
+      <nav class="menu">
+        <a href="/account/teacher" class="menu-link">Личный кабинет</a>
+        <a href="#" class="menu-link active">Мои тесты</a>
+        <a href="#" class="menu-link">Настройки</a>
+      </nav>
+    </aside>
+
+    <main class="main-content">
+      <div class="dashboard-header">
+        <div>
+          <h1>Создание теста</h1>
+          <p>Добавляй вопросы, варианты ответа и изображение-заголовок.</p>
+        </div>
+        <button class="submit-btn logout-btn" onclick="saveTest()">Сохранить тест</button>
+      </div>
+
+      <section class="panel">
+        <form class="test-form" id="testForm">
+          <label for="testTitle">Название теста</label>
+          <input type="text" id="testTitle" placeholder="Например: История России" />
+
+          <label for="testDesc">Описание</label>
+          <textarea id="testDesc" rows="3" placeholder="Краткое описание теста"></textarea>
+
+          <div class="questions-block">
+            <h3>Вопросы</h3>
+
+            <div id="questionsContainer"></div>
+
+            <button type="button" class="submit-btn" onclick="addQuestion()">
+              + Добавить вопрос
+            </button>
+          </div>
+        </form>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <template id="questionTemplate">
+    <div class="question-card">
+      <label>Изображение заголовка вопроса</label>
+      <input type="file" accept="image/*" class="image-input" />
+
+      <div class="image-preview-wrap">
+        <img class="image-preview" alt="Preview" />
+      </div>
+
+      <label>Текст вопроса</label>
+      <input type="text" class="question-text" placeholder="Введите вопрос" />
+
+      <label>Вариант 1</label>
+      <input type="text" class="answer-option" placeholder="Ответ 1" />
+
+      <label>Вариант 2</label>
+      <input type="text" class="answer-option" placeholder="Ответ 2" />
+
+      <label>Вариант 3</label>
+      <input type="text" class="answer-option" placeholder="Ответ 3" />
+
+      <label>Вариант 4</label>
+      <input type="text" class="answer-option" placeholder="Ответ 4" />
+
+      <label>Правильный ответ (1-4)</label>
+      <input type="number" class="correct-answer" min="1" max="4" value="1" />
+
+      <button type="button" class="submit-btn remove-btn">Удалить вопрос</button>
+    </div>
+  </template>
+
+  <script src="/front/created_test.js" type="module"></script>
+</body>
+</html>
